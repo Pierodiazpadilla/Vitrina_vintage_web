@@ -1,6 +1,5 @@
 // Carga del catálogo público: una sola consulta, caché en localStorage (stale-while-revalidate).
 import { useEffect, useState } from 'react'
-import { supabase } from './supabase.js'
 import { safeStorage } from './storage.js'
 
 export const CACHE_KEY = 'vv:products:v1'
@@ -11,7 +10,12 @@ export const PUBLIC_COLUMNS = [
   'images', 'status', 'published_at',
 ].join(',')
 
-export async function fetchPublicProducts(client = supabase) {
+/**
+ * @param {object|null} [client]  sin argumento carga el cliente de Supabase en un chunk aparte
+ *   (supabase-js no entra en el bundle inicial); null = sin configurar.
+ */
+export async function fetchPublicProducts(client) {
+  if (client === undefined) client = (await import('./supabase.js')).supabase
   if (!client) throw new Error('Supabase no está configurado (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)')
   const { data, error } = await client.from('products').select(PUBLIC_COLUMNS).in('status', ['published', 'sold'])
   if (error) throw new Error(error.message)
@@ -29,7 +33,7 @@ const fixturesByEnv = import.meta.env.VITE_USE_FIXTURES === 'true'
  * @param {{ client?: object, useFixtures?: boolean }} [options]  (inyectables para pruebas)
  * @returns {{ products: object[], loading: boolean, error: Error | null }}
  */
-export function useProducts({ client = supabase, useFixtures = fixturesByEnv } = {}) {
+export function useProducts({ client, useFixtures = fixturesByEnv } = {}) {
   const [state, setState] = useState(() => {
     const cached = useFixtures ? [] : safeStorage.get(CACHE_KEY, [])
     // un caché viejo o corrupto puede ser JSON válido que no es una lista

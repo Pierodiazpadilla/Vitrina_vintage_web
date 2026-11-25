@@ -20,7 +20,8 @@ export default function ProductImage({ image, alt, variant = 'thumb', sizes, cla
   const full = { w: Number(image.w) || 1000, h: Number(image.h) || 1000 }
   const { w, h } = variant === 'thumb' ? thumbSize(image) : full
   const src = variant === 'thumb' ? image.thumb || image.full : image.full || image.thumb
-  const srcSet = image.thumb && image.full && image.thumb !== image.full
+  // Sin `sizes` el navegador asume 100vw y baja la foto grande: solo hay srcset si se indica el ancho.
+  const srcSet = sizes && image.thumb && image.full && image.thumb !== image.full
     ? `${image.thumb} ${thumbSize(image).w}w, ${image.full} ${full.w}w`
     : undefined
   return (

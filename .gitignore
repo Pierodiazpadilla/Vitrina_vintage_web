@@ -36,3 +36,6 @@ dist/
 
 # Superpowers workspace
 .superpowers/
+
+# Modelo de OCR que tesseract.js cachea al importar
+*.traineddata

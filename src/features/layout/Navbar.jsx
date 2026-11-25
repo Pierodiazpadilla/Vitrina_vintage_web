@@ -20,7 +20,7 @@ function isActive(item, location) {
 }
 
 export default function Navbar() {
-  const { products } = useCatalog()
+  const { products, loading } = useCatalog()
   const { count, openPanel } = useCart()
   const location = useLocation()
   const items = visibleNavItems(products)
@@ -49,7 +49,6 @@ export default function Navbar() {
             width="460"
             height="182"
             className="h-11 w-auto lg:h-14"
-            fetchpriority="high"
           />
         </Link>
 
@@ -86,12 +85,14 @@ export default function Navbar() {
         <SearchBox />
       </div>
 
-      {items.length > 0 && (
+      {(items.length > 0 || loading) && (
         <nav
           aria-label="Categorías"
           className={`overflow-hidden transition-[max-height] duration-150 lg:max-h-none ${compact ? 'max-h-0' : 'max-h-16'}`}
         >
           <ul className="vv-scroll-x mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 pb-3">
+            {/* mientras carga, reserva la altura de la fila (evita el salto de layout) */}
+            {!items.length && <li aria-hidden="true" className="h-[44px] w-px" />}
             {items.map((item) => {
               const active = isActive(item, location)
               return (

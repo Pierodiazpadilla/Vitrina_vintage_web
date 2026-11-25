@@ -1,6 +1,9 @@
 // Comprueba que la anon key NO puede escribir ni leer borradores.
-// Uso: node scripts/verify-rls.mjs   (lee VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY de .env)
-import 'dotenv/config'
+// Uso: node scripts/verify-rls.mjs   (lee VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY de .env.local o .env)
+import dotenv from 'dotenv'
+
+dotenv.config({ path: '.env.local', quiet: true })
+dotenv.config({ quiet: true })
 import { createClient } from '@supabase/supabase-js'
 
 const url = process.env.VITE_SUPABASE_URL

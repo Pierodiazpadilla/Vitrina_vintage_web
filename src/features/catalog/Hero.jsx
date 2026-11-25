@@ -99,7 +99,7 @@ export default function Hero({ products }) {
                   className={`vv-press block h-20 w-20 overflow-hidden rounded-brand bg-card ${i === index ? 'shadow-hard' : 'shadow-hard-sm opacity-70'}`}
                   style={{ border: 'var(--border-hard)' }}
                 >
-                  <ProductImage image={p.images?.[0]} alt="" priority className="h-full w-full object-cover" />
+                  <ProductImage image={p.images?.[0]} alt="" className="h-full w-full object-cover" />
                 </button>
               </li>
             ))}
@@ -129,13 +129,13 @@ export default function Hero({ products }) {
             className="relative block overflow-hidden rounded-[3px] bg-card"
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
-            aria-label={`Ver ${current.title}`}
           >
             <ProductImage
               key={current.code}
               image={current.images?.[0]}
               alt={current.title}
               variant="full"
+              sizes="(min-width: 1024px) 430px, 270px"
               priority
               className="aspect-[4/3] w-full object-contain"
             />
@@ -173,6 +173,31 @@ export default function Hero({ products }) {
             </Link>
           </div>
         </div>
+      </div>
+    </section>
+  )
+}
+
+/** Mientras carga el catálogo: la consola con la carita en pantalla y las mismas medidas (sin salto de layout). */
+export function HeroSkeleton() {
+  return (
+    <section aria-hidden="true" className="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-10 pt-5 lg:grid-cols-[1fr_minmax(0,460px)] lg:gap-14 lg:pt-12">
+      <div className="order-2 lg:order-1">
+        <div className="h-[29px] w-56 bg-[var(--color-navy-tint)] sm:h-[42px] lg:h-[110px] lg:w-80" />
+        <hr className="vv-divider my-4 w-24" />
+        <div className="h-[56px] max-w-md bg-[var(--color-navy-tint)]" />
+      </div>
+      <div
+        className="order-1 mx-auto w-full max-w-[460px] rounded-[14px] rounded-br-[44px] bg-primary p-4 pb-5 lg:order-2"
+        style={{ border: 'var(--border-hard)', boxShadow: '6px 6px 0 var(--color-navy)' }}
+      >
+        <div className="rounded-[8px] rounded-br-[22px] bg-navy p-3 pb-2">
+          <div className="mb-2 h-4" />
+          <div className="flex aspect-[4/3] w-full items-center justify-center rounded-[3px] bg-card">
+            <span className="font-display text-3xl text-navy">^<span className="vv-blink">_</span>^</span>
+          </div>
+        </div>
+        <div className="mt-4 h-[132px]" />
       </div>
     </section>
   )

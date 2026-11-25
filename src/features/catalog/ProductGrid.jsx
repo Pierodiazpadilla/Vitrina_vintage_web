@@ -16,9 +16,9 @@ export function layoutCards(products) {
 export default function ProductGrid({ products }) {
   return (
     <ul className="grid grid-flow-row-dense grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
-      {layoutCards(products).map(({ product, wide }, i) => (
+      {layoutCards(products).map(({ product, wide }) => (
         <li key={product.code} className={wide ? 'col-span-2' : ''}>
-          <ProductCard product={product} featured={wide} priority={i < 2} />
+          <ProductCard product={product} featured={wide} />
         </li>
       ))}
     </ul>

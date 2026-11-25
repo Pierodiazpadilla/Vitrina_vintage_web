@@ -4,7 +4,7 @@ import { useCatalog } from '../lib/catalogContext.jsx'
 import { filterProducts, filtersFromParams, filtersToParams, sortProducts } from '../shared/search.js'
 import { waLink } from '../shared/whatsapp.js'
 import { GENERAL_WA_MESSAGE } from '../shared/brand.js'
-import Hero from '../features/catalog/Hero.jsx'
+import Hero, { HeroSkeleton } from '../features/catalog/Hero.jsx'
 import CategoryTiles from '../features/catalog/CategoryTiles.jsx'
 import ProductGrid from '../features/catalog/ProductGrid.jsx'
 import TrustSection from '../features/catalog/TrustSection.jsx'
@@ -51,7 +51,7 @@ export default function Home() {
 
   return (
     <>
-      <Hero products={products} />
+      {loading && !products.length ? <HeroSkeleton /> : <Hero products={products} />}
       <CategoryTiles products={products} />
 
       <section id="catalogo" aria-labelledby="catalogo-title" className="mx-auto max-w-6xl scroll-mt-36 px-4 py-8">
