@@ -272,7 +272,7 @@ El wireframe se escribió antes de ver `raw-catalog/`; su **estructura** de pág
 - "Reserva con S/ [adelanto]" del wireframe se elimina: la política de preventa exige pago total.
 
 ### Datos y velocidad
-- Al cargar: **una** consulta a `products` con solo las columnas públicas (`code, title, price, discount_percent, category, is_original, era, condition, tags, editorial, year, extras, is_preorder, preorder_eta, images, status, published_at`) y `status in ('published','sold')`. ~500 filas.
+- Al cargar: **una** consulta a `products` con solo las columnas públicas (`code, title, price, discount_percent, category, is_original, era, condition, tags, editorial, year, extras, variants, stock, featured_rank, is_preorder, preorder_eta, images, status, published_at`) y `status in ('published','sold')`. ~500 filas.
 - Cache en memoria + `localStorage` (stale-while-revalidate): pinta al instante con lo guardado y refresca en segundo plano.
 - Grilla usa `thumb.webp` con `loading="lazy"`, `width/height` explícitos y `srcset` thumb/full; el detalle usa `full`.
 - Objetivo: LCP < 2,5 s en 4G simulado de Lighthouse móvil; bundle JS inicial < 200 KB gzip (el código de admin y tesseract.js van en chunks lazy que el público nunca descarga).
