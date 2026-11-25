@@ -1,5 +1,5 @@
 // Mensajes y enlaces de WhatsApp (spec §9).
-import { unitPrice, lineTotal, subtotal, surchargeFor, isPriceOnRequest, round2 } from './pricing.js'
+import { unitPrice, lineTotal, subtotal, surchargeFor, isPriceOnRequest, maxQty, round2 } from './pricing.js'
 import { deliveryById, paymentById, countryName } from './checkoutRules.js'
 
 const envNumber =
@@ -69,7 +69,12 @@ export function buildOrderMessage(order) {
   if (order.acceptedPolicies !== true) {
     throw new Error('El cliente debe aceptar las políticas antes de enviar el pedido')
   }
-  const items = order.lines.filter((l) => !isPriceOnRequest(l.product) && l.qty > 0)
+  // Última barrera antes del dinero: sin vendidos/ocultos/agotados, sin versiones inexistentes,
+  // y cantidad topada al stock disponible.
+  const items = order.lines
+    .filter((l) => !isPriceOnRequest(l.product) && l.qty > 0 && maxQty(l.product) > 0)
+    .filter((l) => unitPrice(l.product, l.variant ?? null) != null)
+    .map((l) => ({ ...l, qty: Math.min(l.qty, maxQty(l.product)) }))
   const sub = subtotal(items)
   const payment = paymentLines(order, sub)
   const hasPreorder = items.some((l) => l.product.is_preorder)

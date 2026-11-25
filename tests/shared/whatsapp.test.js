@@ -140,3 +140,25 @@ describe('buildProductMessage', () => {
     expect(buildProductMessage(DB1082, { kind: 'pedir', url: 'https://vitrina.test/p/DB1082' })).toContain('https://vitrina.test/p/DB1082')
   })
 })
+
+describe('review fixes', () => {
+  it('drops sold, hidden and out-of-stock lines and caps quantity at stock', () => {
+    const sold = { ...DB1082, code: 'SOLD1', status: 'sold' }
+    const empty = { ...DB1082, code: 'EMPTY1', stock: 0 }
+    const two = { ...DB1082, code: 'TWO1', stock: 2 }
+    const m = buildOrderMessage({ ...sampleOrder, lines: [
+      { product: sold, variant: null, qty: 3 },
+      { product: empty, variant: null, qty: 1 },
+      { product: two, variant: null, qty: 5 },
+    ] })
+    expect(m).not.toContain('SOLD1')
+    expect(m).not.toContain('EMPTY1')
+    expect(m).toContain('• TWO1 — Dragon Ball Z 3 álbum x2 — S/ 500.00')
+    expect(m).toContain('Subtotal: S/ 500.00')
+  })
+  it('drops lines whose variant no longer exists', () => {
+    const m = buildOrderMessage({ ...sampleOrder, lines: [{ product: DISNEY, variant: 'Edición oro', qty: 1 }] })
+    expect(m).not.toContain('Edición oro')
+    expect(m).toContain('Subtotal: S/ 0.00')
+  })
+})

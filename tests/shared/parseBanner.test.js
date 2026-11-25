@@ -122,3 +122,11 @@ describe('EDITORIALS', () => {
     expect(EDITORIALS).toEqual(expect.arrayContaining(['Navarrete', 'Panini', '3 Reyes', 'Kame House', 'Elite', 'Sabritas']))
   })
 })
+
+describe('review fixes', () => {
+  it('reads thousands separators after S/ as thousands, not cents', () => {
+    expect(parseBanner('Album tapa dura S/ 1,250 (Cod. DB1082)').price).toBe(1250)
+    expect(parseBanner('Album tapa dura S/.1.250 (Cod. DB1082)').price).toBe(1250)
+    expect(parseBanner('Album X S/ 12.50 (Cod. DB1082)').price).toBe(12.5)
+  })
+})

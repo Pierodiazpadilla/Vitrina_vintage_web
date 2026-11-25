@@ -82,7 +82,7 @@ export function metaFromPrefix(prefix) {
 }
 
 const ORIGINAL_WORDS = /\b(original(es)?|licenciad[oa]s?)\b/
-const REPLICA_WORDS = /\b(replica|reimpresion|no oficial|trucho)\b/
+const REPLICA_WORDS = /\b(replica|reimpresion|no oficial|trucho|no original(es)?|no licenciad[oa]s?|sin licencia)\b/
 
 /** true = original, false = réplica, null = no se sabe. Réplica gana si aparecen ambas. */
 export function licenseFromText(text) {

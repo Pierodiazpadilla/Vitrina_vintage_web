@@ -13,6 +13,8 @@ export function isPriceOnRequest(p) {
 export function listPrice(p, variantLabel = null) {
   if (isPriceOnRequest(p)) return null
   const variant = variantLabel ? (p.variants ?? []).find((v) => v.label === variantLabel) : null
+  // una versión guardada que ya no existe no tiene precio (no se cae al precio base)
+  if (variantLabel && !variant) return null
   const value = num(variant ? variant.price : p.price)
   return value > 0 ? round2(value) : null
 }

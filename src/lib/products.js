@@ -30,11 +30,11 @@ const fixturesByEnv = import.meta.env.VITE_USE_FIXTURES === 'true'
  * @returns {{ products: object[], loading: boolean, error: Error | null }}
  */
 export function useProducts({ client = supabase, useFixtures = fixturesByEnv } = {}) {
-  const [state, setState] = useState(() => ({
-    products: useFixtures ? [] : safeStorage.get(CACHE_KEY, []),
-    loading: true,
-    error: null,
-  }))
+  const [state, setState] = useState(() => {
+    const cached = useFixtures ? [] : safeStorage.get(CACHE_KEY, [])
+    // un caché viejo o corrupto puede ser JSON válido que no es una lista
+    return { products: Array.isArray(cached) ? cached : [], loading: true, error: null }
+  })
 
   useEffect(() => {
     let cancelled = false

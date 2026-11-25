@@ -95,3 +95,13 @@ describe('useProducts', () => {
     await waitFor(() => expect(result.current.products.length).toBe(PRODUCTS.length))
   })
 })
+
+describe('review fixes', () => {
+  it.each(['null', '{}', '"x"', '42'])('ignores a cache that is valid JSON but not an array (%s)', async (raw) => {
+    localStorage.setItem(CACHE_KEY, raw)
+    const { client } = fakeClient({ data: PRODUCTS, error: null })
+    const { result } = renderHook(() => useProducts({ client }))
+    expect(result.current.products).toEqual([])
+    await waitFor(() => expect(result.current.products).toEqual(PRODUCTS))
+  })
+})

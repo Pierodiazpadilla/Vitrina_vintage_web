@@ -155,7 +155,7 @@ function bannerBlock(section) {
 // ───────────────────────── campos ─────────────────────────
 
 const PRICE_RE = /(\d{1,3}(?:[.,]\d{3})+|\d{1,5})(?:[.,](\d{1,2}))?\s*soles?\b/gi
-const PRICE_PEN_RE = /s\/\.?\s*(\d{1,5})(?:[.,](\d{1,2}))?/gi
+const PRICE_PEN_RE = /s\/\.?\s*(\d{1,3}(?:[.,]\d{3})+|\d{1,5})(?:[.,](\d{1,2}))?/gi
 
 function toNumber(intPart, dec) {
   const n = Number(String(intPart).replace(/[.,]/g, '') + (dec ? '.' + dec : ''))

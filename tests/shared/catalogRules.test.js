@@ -124,3 +124,11 @@ describe('resolveMeta', () => {
     expect(resolveMeta(['_1 DRAGON BALL/SIN LICENCIA/a.jpg'], 'db', 'original').isOriginal).toBe(false)
   })
 })
+
+describe('review fixes', () => {
+  it('negated license words are not "original"', () => {
+    expect(licenseFromText('No original')).toBe(false)
+    expect(licenseFromText('álbum no licenciado')).toBe(false)
+    expect(licenseFromText('sin licencia')).toBe(false)
+  })
+})

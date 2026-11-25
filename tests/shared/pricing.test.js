@@ -17,8 +17,8 @@ describe('unitPrice / listPrice', () => {
     expect(unitPrice(p, 'Tapa blanda')).toBe(60)
     expect(unitPrice({ ...p, discount_percent: 35 }, 'Tapa dura')).toBe(162.5)
   })
-  it('falls back to price for an unknown variant', () => {
-    expect(unitPrice({ ...base, variants: [{ label: 'A', price: 10 }] }, 'Z')).toBe(250)
+  it('has no price for an unknown variant (never falls back to the base price)', () => {
+    expect(unitPrice({ ...base, variants: [{ label: 'A', price: 10 }] }, 'Z')).toBe(null)
   })
   it('returns null for price-on-request preorders', () => {
     expect(unitPrice({ ...base, price: null, is_preorder: true })).toBe(null)
@@ -130,5 +130,12 @@ describe('countries', () => {
   })
   it('does not list Peru (domestic orders use Lima/Provincias)', () => {
     expect(COUNTRIES.some((c) => c.code === 'PE')).toBe(false)
+  })
+})
+
+describe('review fixes', () => {
+  it('a variant that no longer exists has no price', () => {
+    expect(unitPrice({ ...base, price: 60, variants: [{ label: 'Tapa blanda', price: 60 }] }, 'Tapa dura')).toBe(null)
+    expect(lineTotal({ product: { ...base, price: 60, variants: [{ label: 'Tapa blanda', price: 60 }] }, variant: 'Tapa dura', qty: 1 })).toBe(0)
   })
 })
