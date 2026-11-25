@@ -1,0 +1,25 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno / secretos
+.env
+.env.local
+.env.*.local
+
+# Fotos crudas del catálogo (pesadas, no van al repo)
+raw-catalog/
+
+# Builds
+dist/
+.astro/
+.next/
+
+# Configuración local de Claude Code
+.claude/settings.local.json
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+*.log
