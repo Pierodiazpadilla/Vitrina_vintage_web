@@ -1,6 +1,6 @@
 # Diseño — Web comercial Vitrina Vintage
 
-**Fecha:** 2026-11-24 · **Estado:** cerrado, pendiente de aprobación final del dueño
+**Fecha:** 2026-11-24 · **Estado:** APROBADO por el dueño (2026-11-25)
 **Stack (decidido por el dueño):** React + Vite + Tailwind + Supabase (Postgres, Storage, Auth)
 
 Referencias obligatorias:
@@ -430,8 +430,8 @@ Nombre: Juan Pérez
 - Botón de compra rápida por producto además del checkout completo.
 - El carrito guarda `code + variante`; el stock es por producto, no por variante.
 
-## 15. Pendientes que solo el dueño puede responder
+## 15. Datos confirmados por el dueño
 
-- Número de WhatsApp de ventas (`VITE_WHATSAPP_NUMBER`).
-- **Plazo de reclamos:** las políticas dicen 05 días, algunas fotos dicen 07 días. La web mostrará lo que dicen las políticas (05) salvo indicación contraria.
-- Hosting del front (Vercel/Netlify/Cloudflare Pages; cualquiera sirve). Queda al builder si el dueño no tiene preferencia.
+- WhatsApp de ventas: `+51 941 392 619` → `VITE_WHATSAPP_NUMBER=51941392619`, enlaces `https://wa.me/51941392619`.
+- Plazo de reclamos: **5 días** en toda la web (políticas, FAQ, checkout y avisos de compra).
+- Hosting del front: queda al builder (Vercel/Netlify/Cloudflare Pages).
