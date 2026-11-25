@@ -2,7 +2,12 @@
 // Los usan las pruebas y la interfaz cuando VITE_USE_FIXTURES=true.
 // Datos tomados de banners reales del catálogo; las preventas usan las fotos de public/catalogo/.
 
-const img = (path) => [{ path, full: path, thumb: path, w: 1080, h: 1080 }]
+// Fotos generadas con scripts/make-sample-images.mjs (fotos reales del catálogo en webp).
+const img = (code, n = 1, w = 1000, h = 1000) =>
+  Array.from({ length: n }, (_, i) => {
+    const path = `/catalogo/muestras/${code}-${i + 1}`
+    return { path, full: `${path}-full.webp`, thumb: `${path}-thumb.webp`, w, h }
+  })
 
 const base = {
   discount_percent: 0,
@@ -25,6 +30,7 @@ export const PRODUCTS = [
   {
     ...base,
     code: 'DB1082',
+    images: img('DB1082'),
     title: 'Dragon Ball Z 3 álbum',
     price: 250,
     category: 'dragon-ball',
@@ -40,6 +46,7 @@ export const PRODUCTS = [
   {
     ...base,
     code: 'VR1149',
+    images: img('VR1149', 2),
     title: 'Álbum Tapa dura, COPA MUNDIAL 2026',
     price: 250,
     discount_percent: 35,
@@ -54,6 +61,7 @@ export const PRODUCTS = [
   {
     ...base,
     code: 'VR1111',
+    images: img('VR1111'),
     title: 'Álbum STRANGER THINGS',
     price: 50,
     category: 'variado',
@@ -70,6 +78,7 @@ export const PRODUCTS = [
   {
     ...base,
     code: 'TMP-3f9a1c2b',
+    images: img('TMP-3f9a1c2b'),
     title: 'Album WALT DISNEY TU Y YO',
     price: 60,
     variants: [
@@ -97,7 +106,7 @@ export const PRODUCTS = [
     preorder_eta: 'Diciembre 2026',
     featured_rank: 1,
     extras: '32 páginas · 305 stickers (36 especiales) · 4 minipósters · caja para figuritas',
-    images: img('/catalogo/WhatsApp Image 2026-11-24 at 2.31.52 PM.jpeg'),
+    images: img('PV0001', 1, 1000, 908),
     published_at: '2026-11-24T14:31:00Z',
   },
   {
@@ -112,12 +121,13 @@ export const PRODUCTS = [
     preorder_eta: 'Diciembre 2026',
     featured_rank: 2,
     extras: '32 páginas · 266 stickers (36 especiales) · 4 minipósters · caja para figuritas',
-    images: img('/catalogo/WhatsApp Image 2026-11-24 at 8.09.27 PM.jpeg'),
+    images: img('PV0002', 1, 1000, 907),
     published_at: '2026-11-24T20:09:00Z',
   },
   {
     ...base,
     code: 'CZ0010',
+    images: img('CZ0010'),
     title: 'Album peruano CABALLEROS DEL ZODIACO',
     price: 250,
     category: 'caballeros-del-zodiaco',
@@ -133,6 +143,7 @@ export const PRODUCTS = [
   {
     ...base,
     code: 'PK1511',
+    images: img('PK1511'),
     title: 'POKEMON ULTRA Vol. 4 binder coleccionador',
     price: 100,
     category: 'pokemon',
@@ -147,6 +158,7 @@ export const PRODUCTS = [
   {
     ...base,
     code: 'DG0018',
+    images: img('DG0018'),
     title: 'DIGIMON ENCICLOPEDIA DEFINITIVA, álbum tapa dura',
     price: 250,
     category: 'digimon',
@@ -161,6 +173,7 @@ export const PRODUCTS = [
   {
     ...base,
     code: 'VR1663',
+    images: img('VR1663'),
     title: 'LOS REINOS DE LA NATURALEZA paquetón',
     price: 80,
     category: 'variado',
@@ -170,6 +183,56 @@ export const PRODUCTS = [
     year: 1985,
     stock: 4,
     published_at: '2026-11-05T10:00:00Z',
+  },
+  {
+    ...base,
+    code: 'PV0003',
+    title: 'Street Fighter II — Álbum portada metálica',
+    price: 90,
+    category: 'variado',
+    is_original: false,
+    era: 'retro',
+    is_preorder: true,
+    preorder_eta: 'Diciembre 2026',
+    featured_rank: 3,
+    extras: '32 páginas · 240 stickers (36 especiales) · 4 minipósters · caja para figuritas',
+    images: img('PV0003', 1, 1000, 908),
+    published_at: '2026-11-24T19:00:00Z',
+  },
+  {
+    ...base,
+    code: 'SS0040',
+    title: 'Enciclopedia Saint Seiya 40 aniversario — Del Santuario al Oro Eterno',
+    price: 180,
+    category: 'caballeros-del-zodiaco',
+    is_original: true,
+    era: 'moderna',
+    condition: 'Sellado',
+    tags: ['sellado', 'combo'],
+    variants: [
+      { label: 'Formato grande', price: 180 },
+      { label: 'Formato chico', price: 120 },
+    ],
+    year: 2026,
+    extras: 'enciclopedia sellada + caja dorada de Sagitario para figuritas',
+    stock: 3,
+    images: img('SS0040', 1, 1000, 750),
+    published_at: '2026-11-23T10:47:00Z',
+  },
+  {
+    ...base,
+    code: 'NA0001',
+    title: 'Naruto — Álbum de stickers + fajo de figuritas',
+    price: 70,
+    category: 'anime',
+    is_original: true,
+    era: 'moderna',
+    condition: 'Sellado',
+    tags: ['sellado', 'combo', 'completo'],
+    extras: 'álbum sellado + fajo completo de figuritas',
+    stock: 6,
+    images: img('NA0001', 1, 1000, 750),
+    published_at: '2026-11-23T10:47:30Z',
   },
 ]
 
