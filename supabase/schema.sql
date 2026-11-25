@@ -88,6 +88,11 @@ create policy "products_admin_read" on public.products
   for select to authenticated
   using (public.is_admin());
 
+drop policy if exists "catalog_public_select" on storage.objects;
+create policy "catalog_public_select" on storage.objects
+  for select
+  using (bucket_id = 'catalog');
+  
 drop policy if exists "products_admin_insert" on public.products;
 create policy "products_admin_insert" on public.products
   for insert to authenticated
