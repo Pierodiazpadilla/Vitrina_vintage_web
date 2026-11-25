@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Marca */
+  --color-primary: #1798B7;
+  --color-primary-dark: #127A93;
+  --color-navy: #1D2B58;
+  --color-surface: #F7F9FC;
+  --color-card: #FFFFFF;
+  --color-accent-warm: #F59E0B;
+
+  /* Derivados */
+  --color-text: var(--color-navy);
+  --color-text-muted: #4A5578;
+  --border-hard: 2px solid var(--color-navy);
+  --shadow-hard: 4px 4px 0 var(--color-navy);
+  --shadow-hard-sm: 2px 2px 0 var(--color-navy);
+  --radius: 6px;
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

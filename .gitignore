@@ -26,3 +26,13 @@ desktop.ini
 raw-catalog/
 .env
 .env.local
+
+# Importador
+import-errors.json
+import-preview.json
+
+# Build
+dist/
+
+# Superpowers workspace
+.superpowers/
