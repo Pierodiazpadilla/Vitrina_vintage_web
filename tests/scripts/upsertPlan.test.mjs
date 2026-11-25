@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { findExisting, mergeByCode, planUpsert } from '../../scripts/lib/upsertPlan.mjs'
+import { findExisting, planUpsert, resolveCode } from '../../scripts/lib/upsertPlan.mjs'
 
 const cand = {
   code: 'DB1082',
@@ -26,20 +26,34 @@ const cand = {
 }
 
 describe('findExisting', () => {
-  it('por código', () => {
-    expect(findExisting({ code: 'DB1082', codeIsTemp: false, md5s: ['x'], sourceKey: 'k' }, [{ code: 'DB1082' }])).toEqual({ code: 'DB1082' })
-  })
-  it('por código sin importar mayúsculas', () => {
-    expect(findExisting({ code: 'db1082', codeIsTemp: false, md5s: [], sourceKey: 'k' }, [{ code: 'DB1082' }])?.code).toBe('DB1082')
-  })
-  it('un código temporal no se usa: busca por MD5', () => {
+  it('por MD5 (alguna foto en común)', () => {
     expect(findExisting({ code: 'TMP-ab12cd34', codeIsTemp: true, md5s: ['m1'], sourceKey: 'k' }, [{ code: 'ZZ1', file_hashes: ['m1'] }]).code).toBe('ZZ1')
   })
-  it('por último, por nombre base', () => {
+  it('luego por nombre base', () => {
     expect(findExisting({ code: 'TMP-1', codeIsTemp: true, md5s: ['n'], sourceKey: 'vitrinadblic (24)' }, [{ code: 'Q', file_hashes: [], source_key: 'vitrinadblic (24)' }]).code).toBe('Q')
   })
-  it('sin coincidencias → null', () => {
-    expect(findExisting(cand, [{ code: 'OTRO', file_hashes: ['zz'], source_key: 'x' }])).toBe(null)
+  it('el mismo código con otras fotos y otro nombre NO es el mismo producto (el catálogo reutiliza códigos)', () => {
+    expect(findExisting({ code: 'DB0126', codeIsTemp: false, md5s: ['x'], sourceKey: 'vitrinadb (34)' }, [{ code: 'DB0126', file_hashes: ['y'], source_key: 'vitrinadblic (1)' }])).toBe(null)
+  })
+  it('MD5 gana aunque el código leído cambie entre corridas', () => {
+    expect(findExisting({ code: 'DB9999', codeIsTemp: false, md5s: ['m1'], sourceKey: 'k' }, [{ code: 'DB1082', file_hashes: ['m1'] }]).code).toBe('DB1082')
+  })
+})
+
+describe('resolveCode', () => {
+  const taken = new Set(['DB0126', 'DB0126-2'])
+  it('código libre → se usa', () => {
+    expect(resolveCode({ code: 'db1082', codeIsTemp: false }, null, taken)).toEqual({ code: 'DB1082', codeIsTemp: false, duplicate: false })
+  })
+  it('código tomado por otro producto → sufijo libre y aviso', () => {
+    expect(resolveCode({ code: 'DB0126', codeIsTemp: false }, null, taken)).toEqual({ code: 'DB0126-3', codeIsTemp: false, duplicate: true })
+  })
+  it('fila emparejada con código real → se conserva (re-ejecución estable)', () => {
+    expect(resolveCode({ code: 'DB0126', codeIsTemp: false }, { code: 'DB0126-2', code_is_temp: false }, taken).code).toBe('DB0126-2')
+  })
+  it('un código real reemplaza al temporal de la fila; uno temporal no cambia nada', () => {
+    expect(resolveCode({ code: 'DB2000', codeIsTemp: false }, { code: 'TMP-1', code_is_temp: true }, taken)).toEqual({ code: 'DB2000', codeIsTemp: false, duplicate: false })
+    expect(resolveCode({ code: 'TMP-9', codeIsTemp: true }, { code: 'TMP-1', code_is_temp: true }, taken).code).toBe('TMP-1')
   })
 })
 
@@ -56,16 +70,12 @@ describe('planUpsert', () => {
     expect(planUpsert(cand, { status: 'draft', admin_edited: false }).action).toBe('update-full')
   })
 
-  it('un código real reemplaza al temporal; uno temporal no reemplaza al real', () => {
-    expect(planUpsert(cand, { status: 'draft', admin_edited: false, code: 'TMP-1', code_is_temp: true }).patch).toMatchObject({ code: 'DB1082', code_is_temp: false })
-    expect(planUpsert({ ...cand, code: 'TMP-9', codeIsTemp: true }, { status: 'draft', admin_edited: false, code: 'DB1', code_is_temp: false }).patch.code).toBe('DB1')
-  })
-
   it('editado por el admin o publicado → solo agrega fotos, hashes y descuento', () => {
     const p = planUpsert({ ...cand, price: 999, discountPercent: 35 }, { status: 'published', admin_edited: true, price: 250, images: [{ path: 'a', full: 'fa' }], file_hashes: ['old'] })
     expect(p.action).toBe('update-append')
     expect(p.patch.price).toBeUndefined()
     expect(p.patch.title).toBeUndefined()
+    expect(p.patch.code).toBeUndefined()
     expect(p.patch.discount_percent).toBe(35)
     expect(p.patch.file_hashes).toEqual(expect.arrayContaining(['old', ...cand.md5s]))
     expect(p.patch.images.map((i) => i.path)).toEqual(['a', 'products/DB1082/m1'])
@@ -76,23 +86,5 @@ describe('planUpsert', () => {
     const p = planUpsert(cand, { status: 'published', admin_edited: true, images: cand.images, file_hashes: ['m1'] })
     expect(p.patch.images).toHaveLength(1)
     expect(p.patch.discount_percent).toBeUndefined()
-  })
-})
-
-describe('mergeByCode', () => {
-  const c1 = { ...cand, sourceKey: 'a', md5s: ['m1'], files: [{ md5: 'm1' }], price: null, warnings: [] }
-  const c2 = { ...cand, sourceKey: 'b', md5s: ['m9'], files: [{ md5: 'm9' }], price: 250, discountPercent: 35, warnings: ['low_confidence'] }
-
-  it('fusiona grupos con el mismo código real', () => {
-    const out = mergeByCode([c1, c2])
-    expect(out).toHaveLength(1)
-    expect(out[0].md5s).toEqual(['m1', 'm9'])
-    expect(out[0].price).toBe(250)
-    expect(out[0].discountPercent).toBe(35)
-    expect(out[0].warnings).toEqual(expect.arrayContaining(['merged_by_code', 'low_confidence']))
-  })
-
-  it('no fusiona códigos temporales', () => {
-    expect(mergeByCode([{ ...c1, code: 'TMP-1', codeIsTemp: true }, { ...c2, code: 'TMP-1', codeIsTemp: true }])).toHaveLength(2)
   })
 })

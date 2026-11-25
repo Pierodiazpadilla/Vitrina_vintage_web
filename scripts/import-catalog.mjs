@@ -11,7 +11,7 @@ import { findCatalogRoot, scanCatalog } from './lib/scan.mjs'
 import { webpVariants } from './lib/images.mjs'
 import { createOcr } from './lib/ocr.mjs'
 import { buildCandidate, mergeParsed, needsMoreOcr } from './lib/candidate.mjs'
-import { findExisting, mergeByCode, planUpsert } from './lib/upsertPlan.mjs'
+import { findExisting, planUpsert, resolveCode } from './lib/upsertPlan.mjs'
 import { parseBanner } from '../src/shared/parseBanner.js'
 
 dotenv.config({ path: '.env.local', quiet: true })
@@ -150,22 +150,35 @@ async function main() {
     }
   })
 
-  const merged = mergeByCode(candidates.filter(Boolean))
-  const summary = { archivos: fileCount, grupos: groups.length, insertados: 0, actualizados: 0, fusionados: merged.filter((c) => c.warnings.includes('merged_by_code')).length, conWarnings: merged.filter((c) => c.warnings.length).length, fallidos: 0 }
+  const ready = candidates.filter(Boolean)
+  const summary = { archivos: fileCount, grupos: groups.length, insertados: 0, actualizados: 0, codigosRepetidos: 0, conWarnings: 0, fallidos: 0 }
   const preview = []
 
-  for (const candidate of merged) {
-    const row = findExisting(candidate, existing)
+  for (const raw of ready) {
+    const row = findExisting(raw, existing)
+    // Códigos de OTRAS filas (los de esta misma fila no cuentan como choque).
+    const taken = new Set(existing.filter((r) => r !== row).map((r) => String(r.code).toUpperCase()))
+    const resolved = resolveCode(raw, row, taken)
+    const candidate = {
+      ...raw,
+      code: resolved.code,
+      codeIsTemp: resolved.codeIsTemp,
+      warnings: resolved.duplicate ? [...raw.warnings, 'duplicate_code'] : raw.warnings,
+    }
+    if (resolved.duplicate) summary.codigosRepetidos++
+    if (candidate.warnings.length) summary.conWarnings++
     if (dryRun) {
       const { action, patch } = planUpsert(candidate, row)
       preview.push({ action, matched: row?.code ?? null, ...patch, files: candidate.sourceFiles })
-      if (action === 'insert') summary.insertados++
-      else summary.actualizados++
+      // simula la fila para que los códigos siguientes vean este como tomado
+      if (action === 'insert') {
+        existing.push({ ...patch })
+        summary.insertados++
+      } else summary.actualizados++
       continue
     }
     try {
-      const code = row?.code ?? candidate.code.toUpperCase()
-      const images = await uploadImages(client, code, candidate, new Set(row?.file_hashes ?? []))
+      const images = await uploadImages(client, candidate.code, candidate, new Set(row?.file_hashes ?? []))
       const { action, patch } = planUpsert({ ...candidate, images }, row)
       if (action === 'insert') {
         const { data, error } = await client.from('products').insert(patch).select(SELECT).single()
