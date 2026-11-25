@@ -18,17 +18,170 @@
   --shadow-hard: 4px 4px 0 var(--color-navy);
   --shadow-hard-sm: 2px 2px 0 var(--color-navy);
   --radius: 6px;
+
+  /* Derivados de interfaz (mezclas de los tokens de marca) */
+  --color-primary-tint: color-mix(in srgb, var(--color-primary) 12%, var(--color-card));
+  --color-navy-tint: color-mix(in srgb, var(--color-navy) 8%, var(--color-card));
+  --color-accent-tint: color-mix(in srgb, var(--color-accent-warm) 18%, var(--color-card));
+  --color-scrim: color-mix(in srgb, var(--color-navy) 55%, transparent);
+  --divider: 4px solid var(--color-navy);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 9rem;
 }
 
 body {
   background: var(--color-surface);
   color: var(--color-text);
   font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
+
+@layer components {
+  /* Foco visible en todo lo interactivo */
+  .vv-focus:focus-visible,
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [role='tab']:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Caja "vitrina": borde duro + sombra desplazada */
+  .vv-box {
+    background: var(--color-card);
+    border: var(--border-hard);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hard);
+  }
+
+  /* Sensación de botón físico: se hunde 2 px al tocar */
+  .vv-press {
+    transition: transform 100ms steps(2, end), box-shadow 100ms steps(2, end);
+  }
+  .vv-press:active {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-hard-sm);
+  }
+  @media (hover: hover) {
+    .vv-press:hover {
+      transform: translate(2px, 2px);
+      box-shadow: var(--shadow-hard-sm);
+    }
+  }
+
+  /* Botones */
+  .vv-btn {
+    @apply vv-press inline-flex min-h-[44px] items-center justify-center gap-2 px-4 font-body text-[15px] font-bold leading-tight;
+    border: var(--border-hard);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hard-sm);
+    text-align: center;
+  }
+  .vv-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+  @media (hover: hover) {
+    .vv-btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: none;
+    }
+  }
+  /* CTA: cian oscuro + blanco (4.96:1, AA). El cian puro con texto pequeño no llega a AA. */
+  .vv-btn-primary {
+    background: var(--color-primary-dark);
+    color: var(--color-card);
+  }
+  .vv-btn-primary:hover {
+    background: var(--color-navy);
+  }
+  .vv-btn-navy {
+    background: var(--color-navy);
+    color: var(--color-card);
+  }
+  .vv-btn-ghost {
+    background: var(--color-card);
+    color: var(--color-navy);
+  }
+  .vv-btn:disabled,
+  .vv-btn[aria-disabled='true'] {
+    background: var(--color-navy-tint);
+    color: var(--color-text-muted);
+    border-color: var(--color-text-muted);
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+  }
+
+  /* Etiqueta tipo sticker */
+  .vv-sticker {
+    @apply inline-flex items-center whitespace-nowrap px-1.5 py-0.5 font-body text-[11px] font-bold leading-none;
+    border: var(--border-hard);
+    border-radius: 3px;
+    background: var(--color-card);
+    color: var(--color-navy);
+  }
+  .vv-sticker-cyan { background: var(--color-primary-dark); color: var(--color-card); }
+  .vv-sticker-navy { background: var(--color-navy); color: var(--color-card); }
+  .vv-sticker-warm { background: var(--color-accent-warm); color: var(--color-navy); }
+  .vv-sticker-mono { @apply font-mono font-medium; }
+
+  /* Divisor grueso: eco de la barra del logo */
+  .vv-divider {
+    border: 0;
+    border-top: var(--divider);
+  }
+
+  /* Título de sección en pixel, con la barra del logo debajo */
+  .vv-section-title {
+    @apply font-display text-[22px] leading-none text-navy sm:text-[28px];
+  }
+
+  .vv-input {
+    @apply min-h-[44px] w-full px-3 font-body text-base text-navy;
+    background: var(--color-card);
+    border: var(--border-hard);
+    border-radius: var(--radius);
+  }
+  .vv-input::placeholder { color: var(--color-text-muted); }
+
+  .vv-scroll-x {
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .vv-scroll-x::-webkit-scrollbar { display: none; }
+}
+
+/* Entrada del panel/bottom sheet */
+@keyframes vv-sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes vv-sheet-left {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes vv-blink {
+  50% { opacity: 0; }
+}
+.vv-sheet { animation: vv-sheet-up 180ms steps(6, end) both; }
+@media (min-width: 768px) {
+  .vv-sheet-side { animation-name: vv-sheet-left; }
+}
+.vv-blink { animation: vv-blink 1.2s steps(1, end) infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
