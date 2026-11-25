@@ -6,13 +6,11 @@ export const BRAND = {
   claimDays: 5,
 }
 
-// Redes oficiales: completar `url` cuando el dueño confirme los enlaces.
-// Las que no tienen URL se muestran como texto (no se inventan enlaces).
+// Redes oficiales.
 export const SOCIAL_LINKS = [
-  { id: 'facebook', label: 'Facebook', url: '' },
-  { id: 'instagram', label: 'Instagram', url: '' },
-  { id: 'tiktok', label: 'TikTok', url: '' },
-  { id: 'youtube', label: 'YouTube', url: '' },
+  { id: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/vitrinavintageperu' },
+  { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/vitrinavintageperu/' },
+  { id: 'tiktok', label: 'TikTok', url: 'https://www.tiktok.com/@vitrinavintageperu' },
 ]
 
-export const GENERAL_WA_MESSAGE = 'Hola Vitrina Vintage 👋 Tengo una consulta.'
+export { GENERAL_MESSAGE as GENERAL_WA_MESSAGE } from './whatsapp.js'

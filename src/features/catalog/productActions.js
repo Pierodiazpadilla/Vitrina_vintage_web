@@ -3,7 +3,6 @@ import { isPriceOnRequest, listPrice, unitPrice } from '../../shared/pricing.js'
 import { buildProductMessage, waLink } from '../../shared/whatsapp.js'
 
 export function primaryAction(product, variant = null) {
-  const url = typeof window !== 'undefined' ? `${window.location.origin}/p/${product.code.toLowerCase()}` : null
   let kind = 'pedir'
   let label = 'Pedir por WhatsApp'
   let short = 'Pedir'
@@ -20,7 +19,7 @@ export function primaryAction(product, variant = null) {
     label = 'Reservar por WhatsApp'
     short = 'Reservar'
   }
-  return { kind, label, short, href: waLink(buildProductMessage(product, { variant, kind, url })) }
+  return { kind, label, short, href: waLink(buildProductMessage(product, { variant, kind })) }
 }
 
 /** Se puede sumar a la lista: no vendido, con precio. */

@@ -128,11 +128,12 @@ describe('Lista de pedido y checkout', () => {
     const href = link.getAttribute('href')
     expect(href.startsWith('https://wa.me/51941392619?text=')).toBe(true)
     const text = decodeURIComponent(href.split('text=')[1])
-    expect(text).toContain('• DB1082 — ')
-    expect(text).toContain('Total productos: S/ 441.38')
-    expect(text).toContain('Olva Courier — Arequipa (envío a cotizar)')
-    expect(text).toContain('Nombre: Juan Pérez')
-    expect(text).toContain('✅ Acepto las políticas de compra, envíos y preventa.')
+    expect(text).toContain('- [DB1082] ')
+    expect(text).toContain('*Total:* S/ 441.38')
+    expect(text).toContain('*Entrega:* Olva Courier — Arequipa (envío a cotizar)')
+    expect(text).toContain('*Cliente:* Juan Pérez')
+    expect(text).toContain('plazo de reclamos: 5 días')
+    expect(text).not.toMatch(/https?:/)
   })
 
   it('limita el largo del nombre y lo deja en una línea', async () => {

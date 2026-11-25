@@ -39,18 +39,20 @@ export default function Footer() {
             <IconWhatsApp /> <span className="font-mono">{prettyPhone(WHATSAPP_NUMBER)}</span>
           </a>
           {linked.length > 0 && (
-            <ul className="mt-4 flex flex-wrap gap-2">
-              {linked.map((s) => (
-                <li key={s.id}>
-                  <a className="vv-btn vv-btn-ghost" href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
-                </li>
-              ))}
-            </ul>
+            <>
+              <h2 className="mt-6 font-title text-lg font-bold">Síguenos</h2>
+              <ul className="mt-2 flex flex-wrap gap-2" aria-label="Redes sociales">
+                {linked.map((s) => (
+                  <li key={s.id}>
+                    <a className="vv-btn vv-btn-ghost" href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-sm text-muted">En Facebook están las calificaciones de compradores de Lima, provincias y el extranjero.</p>
+            </>
           )}
           {unlinked.length > 0 && (
-            <p className="mt-4 text-sm text-muted">
-              Búscanos como Vitrina Vintage en {unlinked.join(', ').replace(/, ([^,]*)$/, ' y $1')}: ahí están las calificaciones de compradores.
-            </p>
+            <p className="mt-4 text-sm text-muted">Búscanos como Vitrina Vintage en {unlinked.join(', ')}.</p>
           )}
         </div>
       </div>

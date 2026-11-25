@@ -94,3 +94,30 @@ describe('layoutCards', () => {
     expect(wide).toEqual([0, 9])
   })
 })
+
+describe('Explora la vitrina', () => {
+  it('cada categoría tiene una foto distinta', async () => {
+    const { categoryTiles } = await import('../../src/features/catalog/CategoryTiles.jsx')
+    const tiles = categoryTiles(PRODUCTS)
+    const keys = tiles.map((t) => t.cover?.full)
+    expect(keys.every(Boolean)).toBe(true)
+    expect(new Set(keys).size).toBe(keys.length)
+  })
+
+  it('reserva la única foto posible a quien no tiene otra', async () => {
+    const { assignCovers } = await import('../../src/features/catalog/CategoryTiles.jsx')
+    const a = { full: 'a' }
+    const b = { full: 'b' }
+    // la primera prefiere "a", pero la segunda solo tiene "a": la primera debe ceder y tomar "b"
+    expect(assignCovers([[a, b], [a]]).map((x) => x.full)).toEqual(['b', 'a'])
+    // sin fotos suficientes, la que sobra queda sin foto (nunca repetida)
+    expect(assignCovers([[a], [a]]).map((x) => x?.full ?? null)).toEqual(['a', null])
+  })
+
+  it('las imágenes renderizadas no se repiten', () => {
+    renderApp('/')
+    const region = screen.getByRole('region', { name: 'EXPLORA LA VITRINA' })
+    const srcs = [...region.querySelectorAll('img')].map((img) => img.getAttribute('src'))
+    expect(new Set(srcs).size).toBe(srcs.length)
+  })
+})

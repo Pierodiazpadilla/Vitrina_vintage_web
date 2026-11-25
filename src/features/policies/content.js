@@ -128,7 +128,7 @@ export const POLICY_TABS = [
       },
       {
         title: 'Calificaciones',
-        text: 'Puedes ver calificaciones recientes de compradores de Lima, provincias y el extranjero en la sección "Calificación" de nuestro Facebook, además de Instagram, TikTok y YouTube.',
+        text: 'Puedes ver calificaciones recientes de compradores de Lima, provincias y el extranjero en la sección "Calificación" de nuestro Facebook, además de Instagram y TikTok.',
       },
     ],
   },
