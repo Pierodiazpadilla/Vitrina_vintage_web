@@ -73,8 +73,45 @@ describe('adminApi', () => {
 
   it('restock de un vendido lo vuelve a publicar', async () => {
     const { client, calls, op } = fakeClient()
-    await createAdminApi(client).restock({ id: 'id1', status: 'sold' }, 3)
+    await createAdminApi(client).restock({ id: 'id1', status: 'sold', published_at: '2026-01-01' }, 3)
     expect(op(calls[0], 'update')[1]).toEqual({ stock: 3, status: 'published', admin_edited: true })
+  })
+
+  it('restock sin cantidad de un vendido con stock 0 lo publica con stock 1', async () => {
+    const { client, calls, op } = fakeClient()
+    await createAdminApi(client).restock({ id: 'id1', status: 'sold', stock: 0, published_at: '2026-01-01' })
+    expect(op(calls[0], 'update')[1]).toEqual({ stock: 1, status: 'published', admin_edited: true })
+  })
+
+  it('restock de un publicado con stock 0 asegura stock 1', async () => {
+    const { client, calls, op } = fakeClient()
+    await createAdminApi(client).restock({ id: 'id1', status: 'published', stock: 0, published_at: '2026-01-01' })
+    expect(op(calls[0], 'update')[1]).toEqual({ stock: 1, status: 'published', admin_edited: true })
+  })
+
+  it('restock no publica borradores ni ocultos', async () => {
+    const { client, calls, op } = fakeClient()
+    await createAdminApi(client).restock({ id: 'id1', status: 'hidden', stock: 0 }, 2)
+    expect(op(calls[0], 'update')[1]).toEqual({ stock: 2, admin_edited: true })
+  })
+
+  it('saveProduct de vendido a Publicado valida, pone status y stock ≥ 1', async () => {
+    const { client, calls, op } = fakeClient()
+    await createAdminApi(client).saveProduct('id1', { ...valid, stock: 0, status: 'published' }, { status: 'sold', published_at: '2026-01-01' })
+    expect(op(calls[0], 'update')[1]).toMatchObject({ status: 'published', stock: 1, admin_edited: true })
+  })
+
+  it('saveProduct a Publicado con datos incompletos rechaza sin llamar al cliente', async () => {
+    const { client, calls } = fakeClient()
+    const err = await createAdminApi(client).saveProduct('id1', { ...valid, price: 0, status: 'published' }, { status: 'draft' }).catch((e) => e)
+    expect(err).toBeInstanceOf(ValidationError)
+    expect(calls).toHaveLength(0)
+  })
+
+  it('saveProduct a Vendido deja el stock en 0', async () => {
+    const { client, calls, op } = fakeClient()
+    await createAdminApi(client).saveProduct('id1', { ...valid, stock: 3, status: 'sold' }, { status: 'published' })
+    expect(op(calls[0], 'update')[1]).toMatchObject({ status: 'sold', stock: 0 })
   })
 
   it('deleteProduct borra fotos full y thumb y luego la fila', async () => {

@@ -1,7 +1,7 @@
 // Listado del panel: búsqueda (incluye borradores y ocultos), vendido, stock, destacar, editar y fotos (spec §10.3).
 import { useEffect, useMemo, useState } from 'react'
 import { searchProducts } from '../../shared/search.js'
-import { useAdminApi } from './adminApi.js'
+import { STATUSES, useAdminApi } from './adminApi.js'
 import ProductForm from './ProductForm.jsx'
 import LoadingFace from '../catalog/LoadingFace.jsx'
 import { money } from '../catalog/productActions.js'
@@ -55,6 +55,8 @@ function Row({ row, api, onUpdated, onDeleted }) {
 
   const stock = Number(row.stock ?? 1)
   const sold = row.status === 'sold'
+  // Vendido o sin stock: solo "Reponer" (sin campo vacío ni "Marcar vendido").
+  const outOfStock = sold || stock <= 0
 
   return (
     <li className="vv-box p-3" data-testid={`row-${row.code}`}>
@@ -78,13 +80,16 @@ function Row({ row, api, onUpdated, onDeleted }) {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-        {!sold && stock <= 1 && (
+        {!outOfStock && stock === 1 && (
           <button type="button" disabled={busy} onClick={() => run(() => api.markSold(row.id))} className="vv-btn vv-btn-ghost min-h-[40px] text-sm">Marcar como vendido</button>
         )}
-        {!sold && stock > 1 && (
+        {!outOfStock && stock > 1 && (
           <button type="button" disabled={busy} onClick={() => run(() => api.decrementStock(row.id, stock))} className="vv-btn vv-btn-ghost min-h-[40px] text-sm">−1 vendido</button>
         )}
-        {(stock > 1 || sold) && (
+        {outOfStock && (
+          <button type="button" disabled={busy} onClick={() => run(() => api.restock(row))} className="vv-btn vv-btn-primary min-h-[44px] text-sm">Reponer</button>
+        )}
+        {!outOfStock && stock > 1 && (
           <span className="flex items-center gap-1">
             <input aria-label={`Reponer stock de ${row.code}`} type="number" min="1" value={restock} onChange={(e) => setRestock(e.target.value)} className="vv-input min-h-[40px] w-20 font-mono text-sm" />
             <button type="button" disabled={busy || !restock} onClick={async () => { if (await run(() => api.restock(row, restock))) setRestock('') }} className="vv-btn vv-btn-ghost min-h-[40px] text-sm">Reponer</button>
@@ -130,11 +135,22 @@ function Row({ row, api, onUpdated, onDeleted }) {
       {editing && (
         <div className="mt-4 space-y-4 pt-4" style={{ borderTop: 'var(--border-hard)' }}>
           <PhotoEditor images={editing.images ?? []} onChange={(images) => setEditing({ ...editing, images })} />
+          <label className="block max-w-xs">
+            <span className="mb-1 block text-sm font-bold">Estado</span>
+            <select
+              aria-label={`Estado de ${row.code}`}
+              value={editing.status ?? row.status}
+              onChange={(e) => setEditing({ ...editing, status: e.target.value })}
+              className="vv-input min-h-[44px]"
+            >
+              {STATUSES.map((k) => <option key={k} value={k}>{STATUS[k]}</option>)}
+            </select>
+          </label>
           <ProductForm value={editing} onChange={setEditing} />
           <button
             type="button"
             disabled={busy}
-            onClick={async () => { if (await run(() => api.saveProduct(row.id, editing))) setEditing(null) }}
+            onClick={async () => { if (await run(() => api.saveProduct(row.id, editing, row))) setEditing(null) }}
             className="vv-btn vv-btn-primary"
           >
             Guardar cambios

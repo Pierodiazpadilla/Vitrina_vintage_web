@@ -7,6 +7,7 @@ const list = () => [
   draftRow({ code: 'VR1111', title: 'Album STRANGER THINGS', status: 'published', stock: 5, category: 'variado' }),
   draftRow({ code: 'TMP-ABCDEF12', title: 'Borrador sin revisar', status: 'draft' }),
   draftRow({ code: 'HID001', title: 'Oculto viejo', status: 'hidden' }),
+  draftRow({ code: 'SOLD01', title: 'Vendido ya', status: 'sold', stock: 0 }),
 ]
 
 async function setup(overrides = {}) {
@@ -45,6 +46,32 @@ describe('Productos (admin)', () => {
     await userEvent.type(within(row).getByRole('spinbutton', { name: 'Reponer stock de VR1111' }), '8')
     await userEvent.click(within(row).getByRole('button', { name: 'Reponer' }))
     expect(api.restock).toHaveBeenCalledWith(expect.objectContaining({ id: 'id-VR1111' }), '8')
+  })
+
+  it('vendido → solo "Reponer" habilitado, sin campo vacío ni "Marcar vendido", y vuelve a publicado', async () => {
+    const restock = vi.fn(async (row) => ({ ...row, status: 'published', stock: 1 }))
+    await setup({ restock })
+    const row = screen.getByTestId('row-SOLD01')
+    expect(within(row).queryByRole('button', { name: 'Marcar como vendido' })).toBeNull()
+    expect(within(row).queryByRole('spinbutton')).toBeNull()
+    const btn = within(row).getByRole('button', { name: 'Reponer' })
+    expect(btn).toBeEnabled()
+    await userEvent.click(btn)
+    expect(restock).toHaveBeenCalledWith(expect.objectContaining({ code: 'SOLD01', status: 'sold' }))
+    await waitFor(() => expect(within(screen.getByTestId('row-SOLD01')).getByText(/Publicado/)).toBeInTheDocument())
+    expect(within(screen.getByTestId('row-SOLD01')).getByRole('button', { name: 'Marcar como vendido' })).toBeInTheDocument()
+  })
+
+  it('"Editar" permite cambiar el Estado y lo envía al guardar', async () => {
+    const api = await setup()
+    const row = screen.getByTestId('row-SOLD01')
+    await userEvent.click(within(row).getByRole('button', { name: 'Editar' }))
+    await userEvent.selectOptions(within(row).getByRole('combobox', { name: 'Estado de SOLD01' }), 'published')
+    await userEvent.click(within(row).getByRole('button', { name: 'Guardar cambios' }))
+    await waitFor(() => expect(api.saveProduct).toHaveBeenCalled())
+    const [, patch, current] = api.saveProduct.mock.calls[0]
+    expect(patch.status).toBe('published')
+    expect(current.status).toBe('sold')
   })
 
   it('"Destacar" pide la posición y llama setFeatured', async () => {

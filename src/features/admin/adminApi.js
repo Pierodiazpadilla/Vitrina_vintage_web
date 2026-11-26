@@ -5,6 +5,9 @@ import { validateForPublish } from '../../shared/validation.js'
 
 export const BUCKET = 'catalog'
 
+/** Estados válidos (mismo check que supabase/schema.sql). */
+export const STATUSES = ['published', 'draft', 'sold', 'hidden']
+
 export class ValidationError extends Error {
   constructor(errors) {
     super(errors.join(' · '))
@@ -95,8 +98,27 @@ export function createAdminApi(client = supabase, deps = {}) {
       return listRows((q) => q.order('updated_at', { ascending: false }))
     },
 
-    async saveProduct(id, patch) {
-      return must(await table().update({ ...toPatch(patch), admin_edited: true }).eq('id', id).select('*').single())
+    /**
+     * Guarda la edición. Si trae `status`, también lo cambia: pasar a Publicado valida como `publish`
+     * y asegura stock ≥ 1; pasar a Vendido deja el stock en 0.
+     * @param {object} current  fila tal como está en la base (para saber desde qué estado se cambia)
+     */
+    async saveProduct(id, patch, current = {}) {
+      const row = { ...toPatch(patch), admin_edited: true }
+      const status = patch.status
+      if (status && STATUSES.includes(status)) {
+        row.status = status
+        if (status === 'published') {
+          if (!(Number(row.stock ?? current.stock) >= 1)) row.stock = 1
+          if (current.status !== 'published') {
+            const errors = validateForPublish({ ...patch, ...row })
+            if (errors.length) throw new ValidationError(errors)
+          }
+          if (!(patch.published_at ?? current.published_at)) row.published_at = new Date().toISOString()
+        }
+        if (status === 'sold') row.stock = 0
+      }
+      return must(await table().update(row).eq('id', id).select('*').single())
     },
 
     async createProduct(form, status = 'draft') {
@@ -146,12 +168,18 @@ export function createAdminApi(client = supabase, deps = {}) {
       return must(await table().update({ ...patch, admin_edited: true }).eq('id', id).select('*').single())
     },
 
-    /** Reponer: fija el stock; un vendido con stock vuelve a publicarse. */
+    /**
+     * Reponer: fija el stock (sin cantidad → el actual, mínimo 1).
+     * Un vendido, o un publicado sin stock, vuelve a la tienda como publicado.
+     */
     async restock(product, n) {
-      const stock = Math.floor(Number(n))
+      const stock = n == null || n === '' ? Math.max(1, Math.floor(Number(product.stock) || 0)) : Math.floor(Number(n))
       if (!(stock >= 1)) throw new Error('El stock debe ser al menos 1')
       const patch = { stock, admin_edited: true }
-      if (product.status === 'sold') patch.status = 'published'
+      if (product.status === 'sold' || (product.status === 'published' && Number(product.stock) === 0)) {
+        patch.status = 'published'
+        if (!product.published_at) patch.published_at = new Date().toISOString()
+      }
       return must(await table().update(patch).eq('id', product.id).select('*').single())
     },
 
